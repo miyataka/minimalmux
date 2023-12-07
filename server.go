@@ -1,21 +1,24 @@
-package main
+package api
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
 	"log/slog"
 )
 
-func main() {
+func RunServer() {
+	config := newConfig()
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout,
 		&slog.HandlerOptions{
-			Level: slog.LevelDebug,
+			Level: config.LogLevel(),
 		}),
 	)
 
 	srv := &http.Server{
-		Addr: ":8080",
+		Addr: fmt.Sprintf(":%s", config.Port),
 	}
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		logger.Error("server ListenAndServe error: ", err)
