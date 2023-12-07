@@ -5,5 +5,10 @@ import (
 )
 
 func main() {
-	http.ListenAndServe(":8080", nil)
+	srv := &http.Server{
+		Addr: ":8080",
+	}
+	if err := srv.ListenAndServe(); err != nil {
+		panic(err)
+	}
 }
