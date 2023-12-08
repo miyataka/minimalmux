@@ -18,7 +18,7 @@ func RunServer() {
 	)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", healthHandler)
+	mux.HandleFunc("/healthcheck", healthcheckHandler)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.Port),
@@ -29,7 +29,7 @@ func RunServer() {
 	}
 }
 
-func healthHandler(w http.ResponseWriter, r *http.Request) {
+func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
 }
