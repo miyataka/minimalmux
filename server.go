@@ -17,13 +17,14 @@ func RunServer() {
 		}),
 	)
 
-	mux := http.NewServeMux()
+	mux := NewServeMux()
 	mux.HandleFunc("/healthcheck", healthcheckHandler)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.Port),
 		Handler: mux,
 	}
+
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		logger.Error("server ListenAndServe error: ", err)
 	}
