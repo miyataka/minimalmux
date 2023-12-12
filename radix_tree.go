@@ -5,7 +5,10 @@
 
 package api
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Node struct {
 	Part     string
@@ -20,9 +23,10 @@ func (n *Node) insert(parttern string, route Route) {
 	for _, part := range parts {
 		child := n.matchChild(part)
 		if child == nil {
+			fmt.Printf("part: %s\n", part)
 			child = &Node{
 				Part:   part,
-				IsWild: part[0] == ':' || part[0] == '*' || (part[0] == '{' && part[len(part)-1] == '}'),
+				IsWild: isWild(part),
 			}
 			n.Children = append(n.Children, child)
 		}
@@ -51,4 +55,11 @@ func (n *Node) search(path string) Route {
 		n = child
 	}
 	return n.Route
+}
+
+func isWild(part string) bool {
+	if len(part) == 0 {
+		return false
+	}
+	return part[0] == ':' || part[0] == '*' || (part[0] == '{' && part[len(part)-1] == '}')
 }
