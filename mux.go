@@ -5,18 +5,20 @@ import "net/http"
 type ServeMux struct {
 	mux    *http.ServeMux
 	routes []Route
+	tree   *Node
 }
 
 type Route struct {
-	Method  string
-	Path    string
-	Handler http.Handler
+	Method      string
+	Path        string
+	HandlerFunc http.HandlerFunc
 }
 
 func NewServeMux() *ServeMux {
 	return &ServeMux{
 		mux:    http.NewServeMux(), // TODO
 		routes: []Route{},
+		tree:   &Node{},
 	}
 }
 
@@ -26,8 +28,13 @@ func (sm *ServeMux) HandleFunc(pattern string, handler func(http.ResponseWriter,
 }
 
 func (sm *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// TODO
-	sm.mux.ServeHTTP(w, r)
+	path := r.URL.Path
+	route := sm.tree.search(path)
+	if route.HandlerFunc != nil {
+		route.HandlerFunc(w, r)
+	} else {
+		sm.mux.ServeHTTP(w, r)
+	}
 }
 
 func (sm *ServeMux) Handle(pattern string, handler http.Handler) {
@@ -39,19 +46,27 @@ func (sm *ServeMux) Handler(r *http.Request) (h http.Handler, pattern string) {
 }
 
 // original method
+func (sm *ServeMux) setupRouteTree() {
+	// TODO method routing
+	// TODO host/domain routing
+	for _, r := range sm.routes {
+		sm.tree.insert(r.Path, r)
+	}
+}
+
 func (sm *ServeMux) Get(path string, handler http.Handler) {
 	sm.routes = append(sm.routes, Route{
-		Method:  http.MethodGet,
-		Path:    path,
-		Handler: handler,
+		Method:      http.MethodGet,
+		Path:        path,
+		HandlerFunc: handler.ServeHTTP,
 	})
 }
 
 func (sm *ServeMux) Post(path string, handler http.Handler) {
 	sm.routes = append(sm.routes, Route{
-		Method:  http.MethodPost,
-		Path:    path,
-		Handler: handler,
+		Method:      http.MethodPost,
+		Path:        path,
+		HandlerFunc: handler.ServeHTTP,
 	})
 }
 
