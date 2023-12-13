@@ -2,9 +2,12 @@
 
 ## TODO
 - [x] radix tree
-- [ ] http method routing
+    - [ ] test
+- [x] http method routing
+    - [ ] method routing test
+- [ ] not found handler
 - [ ] middlewares
 - [ ] path parameters
-- [ ] not found handler
 - [ ] host routing
-- [ ] test
+- [ ] documentation
+- [ ] benchmarking
