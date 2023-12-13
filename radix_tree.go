@@ -6,7 +6,6 @@
 package api
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -17,13 +16,12 @@ type Node struct {
 	Route    Route
 }
 
-func (n *Node) insert(parttern string, route Route) {
-	parts := strings.Split(parttern, "/")[1:]
+func (n *Node) insert(method, parttern string, route Route) {
+	parts := strings.Split("/"+method+parttern, "/")[1:]
 
 	for _, part := range parts {
 		child := n.matchChild(part)
 		if child == nil {
-			fmt.Printf("part: %s\n", part)
 			child = &Node{
 				Part:   part,
 				IsWild: isWild(part),
@@ -44,8 +42,8 @@ func (n *Node) matchChild(part string) *Node {
 	return nil
 }
 
-func (n *Node) search(path string) Route {
-	parts := strings.Split(path, "/")[1:]
+func (n *Node) search(method, path string) Route {
+	parts := strings.Split("/"+method+path, "/")[1:]
 
 	for _, part := range parts {
 		child := n.matchChild(part)

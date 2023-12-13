@@ -1,11 +1,13 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+	"sync"
+)
 
 type ServeMux struct {
-	mux    *http.ServeMux
-	routes []Route
-	tree   *Node
+	tree *Node
+	mu   sync.RWMutex
 }
 
 type Route struct {
@@ -16,58 +18,77 @@ type Route struct {
 
 func NewServeMux() *ServeMux {
 	return &ServeMux{
-		mux:    http.NewServeMux(), // TODO
-		routes: []Route{},
-		tree:   &Node{},
+		tree: &Node{},
 	}
 }
 
+const methodAll = "_all"
+
 // net/http method wrapper
 func (sm *ServeMux) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	sm.mux.HandleFunc(pattern, handler)
+	sm.handle(methodAll, pattern, handler)
 }
 
 func (sm *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
-	route := sm.tree.search(path)
-	if route.HandlerFunc != nil {
-		route.HandlerFunc(w, r)
-	} else {
-		sm.mux.ServeHTTP(w, r)
-	}
+	route := sm.tree.search(r.Method, path)
+	route.HandlerFunc(w, r)
 }
 
 func (sm *ServeMux) Handle(pattern string, handler http.Handler) {
-	sm.mux.Handle(pattern, handler)
+	sm.handle(methodAll, pattern, handler.ServeHTTP)
 }
 
 func (sm *ServeMux) Handler(r *http.Request) (h http.Handler, pattern string) {
-	return sm.mux.Handler(r)
+	path := r.URL.Path
+	route := sm.tree.search(r.Method, path)
+	return route.HandlerFunc, route.Path
 }
 
 // original method
-func (sm *ServeMux) setupRouteTree() {
-	// TODO method routing
-	// TODO host/domain routing
-	for _, r := range sm.routes {
-		sm.tree.insert(r.Path, r)
+
+func (sm *ServeMux) handle(method string, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+
+	if method == "" {
+		panic("http: invalid method")
 	}
-}
+	if handler == nil {
+		panic("http: nil handler")
+	}
 
-func (sm *ServeMux) Get(path string, handler http.Handler) {
-	sm.routes = append(sm.routes, Route{
-		Method:      http.MethodGet,
-		Path:        path,
-		HandlerFunc: handler.ServeHTTP,
+	// TODO duplicate check?
+
+	sm.tree.insert(method, pattern, Route{
+		Method:      method,
+		Path:        pattern,
+		HandlerFunc: handler,
 	})
 }
 
-func (sm *ServeMux) Post(path string, handler http.Handler) {
-	sm.routes = append(sm.routes, Route{
-		Method:      http.MethodPost,
-		Path:        path,
-		HandlerFunc: handler.ServeHTTP,
-	})
+func (sm *ServeMux) Get(path string, handler http.HandlerFunc) {
+	sm.tree.insert(
+		http.MethodGet,
+		path,
+		Route{
+			Method:      http.MethodGet,
+			Path:        path,
+			HandlerFunc: handler,
+		},
+	)
+}
+
+func (sm *ServeMux) Post(path string, handler http.HandlerFunc) {
+	sm.tree.insert(
+		http.MethodPost,
+		path,
+		Route{
+			Method:      http.MethodPost,
+			Path:        path,
+			HandlerFunc: handler,
+		},
+	)
 }
 
 // TODO other http methods

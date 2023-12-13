@@ -18,10 +18,9 @@ func RunServer() {
 	)
 
 	mux := NewServeMux()
-	mux.routes = []Route{
-		{Path: "/healthcheck", HandlerFunc: healthcheckHandler, Method: http.MethodGet},
-	}
-	mux.setupRouteTree()
+	mux.Get("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+		healthcheckHandler(w, r)
+	})
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.Port),
