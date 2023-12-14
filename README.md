@@ -11,3 +11,4 @@
 - [ ] host routing
 - [ ] documentation
 - [ ] benchmarking
+- [ ] graceful shutdown
