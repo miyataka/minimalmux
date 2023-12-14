@@ -6,8 +6,9 @@ import (
 )
 
 type ServeMux struct {
-	tree *Node
-	mu   sync.RWMutex
+	tree            *Node
+	mu              sync.RWMutex
+	notFoundHandler http.HandlerFunc
 }
 
 type Route struct {
@@ -16,9 +17,14 @@ type Route struct {
 	HandlerFunc http.HandlerFunc
 }
 
+func (r *Route) IsBlank() bool {
+	return r.HandlerFunc == nil
+}
+
 func NewServeMux() *ServeMux {
 	return &ServeMux{
-		tree: &Node{},
+		tree:            &Node{},
+		notFoundHandler: http.NotFound,
 	}
 }
 
@@ -32,6 +38,10 @@ func (sm *ServeMux) HandleFunc(pattern string, handler func(http.ResponseWriter,
 func (sm *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	route := sm.tree.search(r.Method, path)
+	if route.IsBlank() {
+		sm.notFoundHandler(w, r)
+		return
+	}
 	route.HandlerFunc(w, r)
 }
 

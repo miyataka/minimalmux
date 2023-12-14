@@ -5,7 +5,7 @@
     - [ ] test
 - [x] http method routing
     - [ ] method routing test
-- [ ] not found handler
+- [x] not found handler
 - [ ] middlewares
 - [ ] path parameters
 - [ ] host routing
