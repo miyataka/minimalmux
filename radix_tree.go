@@ -53,7 +53,6 @@ func (n *Node) search(method, path string) Route {
 		if child == nil {
 			return Route{}
 		}
-
 		// if part is wild, set path param
 		if child.IsWild {
 			pMap[child.Key] = part

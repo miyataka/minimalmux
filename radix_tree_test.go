@@ -216,6 +216,16 @@ func TestNodeSearch(t *testing.T) {
 				"id": "baz",
 			}},
 		},
+		{
+			name:  "GET /foo/baz/123",
+			input: input{method: http.MethodGet, path: "/foo/baz/123", pattern: "/foo/:id/:name"},
+			expected: Route{Method: http.MethodGet, Pattern: "/foo/:id/:name", HandlerFunc: dummyHandlerFunc, PathParamMap: map[string]string{
+				"id":   "baz",
+				"name": "123",
+			}},
+		},
+		// NOTE: this case is not supported
+		// LIMITATION: some pattern which has same prefix is not supported another path param name
 		// {
 		// 	name:  "GET /foo/baz/123",
 		// 	input: input{method: http.MethodGet, path: "/foo/baz/123", pattern: "/foo/:name/:id"},
