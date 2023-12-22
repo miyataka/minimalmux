@@ -107,7 +107,7 @@ func TestNodeSearch(t *testing.T) {
 			expected: Route{Method: http.MethodGet, Pattern: "/foo/bar", HandlerFunc: dummyHandlerFunc, PathParamMap: map[string]string{}},
 		},
 		{
-			name:  "GET /foo/bar",
+			name:  "GET /foo/baz",
 			input: input{method: http.MethodGet, path: "/foo/baz", pattern: "/foo/:id"},
 			expected: Route{Method: http.MethodGet, Pattern: "/foo/:id", HandlerFunc: dummyHandlerFunc, PathParamMap: map[string]string{
 				"id": "baz",
