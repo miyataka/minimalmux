@@ -10,12 +10,12 @@ func TestNodeInsert(t *testing.T) {
 	dummyHandlerFunc := func(w http.ResponseWriter, r *http.Request) {}
 	cases := []struct {
 		name     string
-		path     string
+		pattern  string
 		expected *Node
 	}{
 		{
-			name: "simple",
-			path: "/",
+			name:    "simple",
+			pattern: "/",
 			expected: &Node{
 				Part: "",
 				Children: []*Node{
@@ -38,8 +38,8 @@ func TestNodeInsert(t *testing.T) {
 			},
 		},
 		{
-			name: "/foo",
-			path: "/foo",
+			name:    "/foo",
+			pattern: "/foo",
 			expected: &Node{
 				Part: "",
 				Children: []*Node{
@@ -61,15 +61,118 @@ func TestNodeInsert(t *testing.T) {
 				Route:  Route{},
 			},
 		},
+		{
+			name:    "/foo/bar",
+			pattern: "/foo/bar",
+			expected: &Node{
+				Part: "",
+				Children: []*Node{
+					{
+						Part: "GET",
+						Children: []*Node{
+							{
+								Part: "foo",
+								Children: []*Node{
+									{
+										Part:     "bar",
+										Children: nil,
+										IsWild:   false,
+										Route:    Route{Method: http.MethodGet, Pattern: "/foo/bar", HandlerFunc: dummyHandlerFunc},
+									},
+								},
+								IsWild: false,
+								Route:  Route{},
+							},
+						},
+						IsWild: false,
+						Route:  Route{},
+					},
+				},
+				IsWild: false,
+				Route:  Route{},
+			},
+		},
+		{
+			name:    "/foo/:id",
+			pattern: "/foo/:id",
+			expected: &Node{
+				Part: "",
+				Children: []*Node{
+					{
+						Part: "GET",
+						Children: []*Node{
+							{
+								Part: "foo",
+								Children: []*Node{
+									{
+										Part:     ":id",
+										Children: nil,
+										IsWild:   true,
+										Key:      "id",
+										Route:    Route{Method: http.MethodGet, Pattern: "/foo/:id", HandlerFunc: dummyHandlerFunc},
+									},
+								},
+								IsWild: false,
+								Route:  Route{},
+							},
+						},
+						IsWild: false,
+						Route:  Route{},
+					},
+				},
+				IsWild: false,
+				Route:  Route{},
+			},
+		},
+		{
+			name:    "/foo/:name/:id",
+			pattern: "/foo/:name/:id",
+			expected: &Node{
+				Part: "",
+				Children: []*Node{
+					{
+						Part: "GET",
+						Children: []*Node{
+							{
+								Part: "foo",
+								Children: []*Node{
+									{
+										Part: ":name",
+										Children: []*Node{
+											{
+												Part:     ":id",
+												Children: nil,
+												IsWild:   true,
+												Key:      "id",
+												Route:    Route{Method: http.MethodGet, Pattern: "/foo/:name/:id", HandlerFunc: dummyHandlerFunc},
+											},
+										},
+										Key:    "name",
+										IsWild: true,
+										Route:  Route{},
+									},
+								},
+								IsWild: false,
+								Route:  Route{},
+							},
+						},
+						IsWild: false,
+						Route:  Route{},
+					},
+				},
+				IsWild: false,
+				Route:  Route{},
+			},
+		},
 		// TODO add more cases
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			n := &Node{}
-			n.insert(http.MethodGet, c.path, Route{
+			n.insert(http.MethodGet, c.pattern, Route{
 				Method:      http.MethodGet,
-				Pattern:     c.path,
+				Pattern:     c.pattern,
 				HandlerFunc: dummyHandlerFunc,
 			})
 			if !deepEqualNode(t, n, c.expected) {
@@ -113,6 +216,14 @@ func TestNodeSearch(t *testing.T) {
 				"id": "baz",
 			}},
 		},
+		// {
+		// 	name:  "GET /foo/baz/123",
+		// 	input: input{method: http.MethodGet, path: "/foo/baz/123", pattern: "/foo/:name/:id"},
+		// 	expected: Route{Method: http.MethodGet, Pattern: "/foo/:name/:id", HandlerFunc: dummyHandlerFunc, PathParamMap: map[string]string{
+		// 		"name": "baz",
+		// 		"id":   "123",
+		// 	}},
+		// },
 	}
 
 	n := &Node{}
@@ -149,12 +260,27 @@ func deepEqualNode(t *testing.T, a, b *Node) bool {
 	if reflect.DeepEqual(a, b) {
 		return true
 	} else {
-		if a.IsWild == b.IsWild && a.Part == b.Part {
-			if a.Route.Method != b.Route.Method || a.Route.Pattern != b.Route.Pattern {
+		if a.IsWild != b.IsWild ||
+			a.Part != b.Part ||
+			a.Key != b.Key ||
+			a.Route.Method != b.Route.Method ||
+			a.Route.Pattern != b.Route.Pattern {
+			return false
+		}
+		if len(a.Route.PathParamMap) != len(b.Route.PathParamMap) {
+			return false
+		}
+		for k := range a.Route.PathParamMap {
+			if a.Route.PathParamMap[k] != b.Route.PathParamMap[k] {
 				return false
 			}
 		}
+		if len(a.Children) != len(b.Children) {
+			return false
+		}
 		for i := range a.Children {
+			// t.Logf("i: %d, a.Children[i]: %#v", i, a.Children[i])
+			// t.Logf("i: %d, b.Children[i]: %#v", i, b.Children[i])
 			if !deepEqualNode(t, a.Children[i], b.Children[i]) {
 				return false
 			}
