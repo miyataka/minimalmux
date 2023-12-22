@@ -35,6 +35,18 @@ func NewServeMux() *ServeMux {
 
 const methodAll = "_all"
 
+var methodArray = []string{
+	http.MethodGet,
+	http.MethodPost,
+	http.MethodPut,
+	http.MethodDelete,
+	http.MethodHead,
+	http.MethodOptions,
+	http.MethodPatch,
+	http.MethodConnect,
+	http.MethodTrace,
+}
+
 // net/http method wrapper
 func (sm *ServeMux) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
 	sm.handle(methodAll, pattern, handler)
@@ -74,6 +86,17 @@ func (sm *ServeMux) handle(method string, pattern string, handler func(http.Resp
 	}
 
 	// TODO duplicate check?
+
+	if method == methodAll {
+		for _, m := range methodArray {
+			sm.tree.insert(m, pattern, Route{
+				Method:      m,
+				Pattern:     pattern,
+				HandlerFunc: handler,
+			})
+		}
+		return
+	}
 
 	sm.tree.insert(method, pattern, Route{
 		Method:      method,
