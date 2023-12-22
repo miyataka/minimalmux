@@ -35,7 +35,7 @@ func NewServeMux() *ServeMux {
 
 const methodAll = "_all"
 
-var methodArray = []string{
+var methodSlice = []string{
 	http.MethodGet,
 	http.MethodPost,
 	http.MethodPut,
@@ -88,7 +88,7 @@ func (sm *ServeMux) handle(method string, pattern string, handler func(http.Resp
 	// TODO duplicate check?
 
 	if method == methodAll {
-		for _, m := range methodArray {
+		for _, m := range methodSlice {
 			sm.tree.insert(m, pattern, Route{
 				Method:      m,
 				Pattern:     pattern,
