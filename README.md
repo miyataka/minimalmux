@@ -4,7 +4,7 @@
 - [x] radix tree
     - [ ] test
 - [x] http method routing
-    - [ ] method routing test
+    - [x] method routing test
 - [x] not found handler
 - [x] path parameters
     - [x] single

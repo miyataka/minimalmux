@@ -205,6 +205,11 @@ func TestNodeSearch(t *testing.T) {
 			expected: Route{Method: http.MethodGet, Pattern: "/foo", HandlerFunc: dummyHandlerFunc, PathParamMap: map[string]string{}},
 		},
 		{
+			name:     "POST /foo",
+			input:    input{method: http.MethodPost, path: "/foo", pattern: "/foo"},
+			expected: Route{Method: http.MethodPost, Pattern: "/foo", HandlerFunc: dummyHandlerFunc, PathParamMap: map[string]string{}},
+		},
+		{
 			name:     "GET /foo/bar",
 			input:    input{method: http.MethodGet, path: "/foo/bar", pattern: "/foo/bar"},
 			expected: Route{Method: http.MethodGet, Pattern: "/foo/bar", HandlerFunc: dummyHandlerFunc, PathParamMap: map[string]string{}},
@@ -245,7 +250,7 @@ func TestNodeSearch(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			r := n.search(http.MethodGet, c.input.path)
+			r := n.search(c.input.method, c.input.path)
 			testEqual(t, c.expected.Pattern, r.Pattern)
 			testEqual(t, c.expected.Method, r.Method)
 			for k := range c.expected.PathParamMap {
