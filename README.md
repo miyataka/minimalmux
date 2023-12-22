@@ -6,8 +6,10 @@
 - [x] http method routing
     - [ ] method routing test
 - [x] not found handler
-- [ ] middlewares
 - [ ] path parameters
+    - [x] single
+    - [ ] multiple
+- [ ] middlewares
 - [ ] host routing
 - [ ] documentation
 - [ ] benchmarking

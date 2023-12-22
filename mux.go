@@ -12,13 +12,18 @@ type ServeMux struct {
 }
 
 type Route struct {
-	Method      string
-	Path        string
-	HandlerFunc http.HandlerFunc
+	Method       string
+	Pattern      string
+	HandlerFunc  http.HandlerFunc
+	PathParamMap map[string]string
 }
 
 func (r *Route) IsBlank() bool {
 	return r.HandlerFunc == nil
+}
+
+func (r *Route) setPathParams(pathParamMap map[string]string) {
+	r.PathParamMap = pathParamMap
 }
 
 func NewServeMux() *ServeMux {
@@ -52,7 +57,7 @@ func (sm *ServeMux) Handle(pattern string, handler http.Handler) {
 func (sm *ServeMux) Handler(r *http.Request) (h http.Handler, pattern string) {
 	path := r.URL.Path
 	route := sm.tree.search(r.Method, path)
-	return route.HandlerFunc, route.Path
+	return route.HandlerFunc, route.Pattern
 }
 
 // original method
@@ -72,7 +77,7 @@ func (sm *ServeMux) handle(method string, pattern string, handler func(http.Resp
 
 	sm.tree.insert(method, pattern, Route{
 		Method:      method,
-		Path:        pattern,
+		Pattern:     pattern,
 		HandlerFunc: handler,
 	})
 }
@@ -83,7 +88,7 @@ func (sm *ServeMux) Get(path string, handler http.HandlerFunc) {
 		path,
 		Route{
 			Method:      http.MethodGet,
-			Path:        path,
+			Pattern:     path,
 			HandlerFunc: handler,
 		},
 	)
@@ -95,7 +100,7 @@ func (sm *ServeMux) Post(path string, handler http.HandlerFunc) {
 		path,
 		Route{
 			Method:      http.MethodPost,
-			Path:        path,
+			Pattern:     path,
 			HandlerFunc: handler,
 		},
 	)
