@@ -9,7 +9,7 @@
 - [x] path parameters
     - [x] single
     - [x] multiple
-- [ ] middlewares
+- [x] middlewares
 - [ ] host routing
 - [ ] documentation
 - [ ] benchmarking
