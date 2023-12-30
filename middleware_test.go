@@ -21,23 +21,41 @@ var testHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) 
 })
 
 func TestAppend(t *testing.T) {
-	aFunc := testMiddleware("a")
-	bFunc := testMiddleware("b")
+	t.Run("empty", func(t *testing.T) {
+		ms := NewMiddlewares()
 
-	ms := NewMiddlewares()
-	ms = ms.Append(aFunc).Append(bFunc)
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest("GET", "/", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ms.Handle(testHandler).ServeHTTP(w, r)
 
-	w := httptest.NewRecorder()
-	r, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	ms.Handle(testHandler).ServeHTTP(w, r)
+		expected := "test\n"
+		if w.Body.String() != expected {
+			t.Fatalf("expected %q, got %q", expected, w.Body.String())
+		}
+	})
 
-	expected := "a\nb\ntest\n"
-	if w.Body.String() != expected {
-		t.Fatalf("expected %q, got %q", expected, w.Body.String())
-	}
+	t.Run("exists", func(t *testing.T) {
+		aFunc := testMiddleware("a")
+		bFunc := testMiddleware("b")
+
+		ms := NewMiddlewares()
+		ms = ms.Append(aFunc).Append(bFunc)
+
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest("GET", "/", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ms.Handle(testHandler).ServeHTTP(w, r)
+
+		expected := "a\nb\ntest\n"
+		if w.Body.String() != expected {
+			t.Fatalf("expected %q, got %q", expected, w.Body.String())
+		}
+	})
 }
 
 func TestPrepend(t *testing.T) {
@@ -55,6 +73,22 @@ func TestPrepend(t *testing.T) {
 	ms.Handle(testHandler).ServeHTTP(w, r)
 
 	expected := "b\na\ntest\n"
+	if w.Body.String() != expected {
+		t.Fatalf("expected %q, got %q", expected, w.Body.String())
+	}
+}
+
+func TestMiddlewaresHandleFunc(t *testing.T) {
+	ms := NewMiddlewares()
+
+	w := httptest.NewRecorder()
+	r, err := http.NewRequest("GET", "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ms.HandleFunc(testHandler).ServeHTTP(w, r)
+
+	expected := "test\n"
 	if w.Body.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, w.Body.String())
 	}
