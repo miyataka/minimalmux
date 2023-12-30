@@ -1,8 +1,14 @@
 package api
 
 import (
+	"context"
+	"errors"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 )
 
 type ServeMux struct {
@@ -130,3 +136,50 @@ func (sm *ServeMux) Post(path string, handler http.HandlerFunc) {
 }
 
 // TODO other http methods
+
+// graceful shutdown
+// TODO use custom type instead of  time.Duration
+func ListenAndServeWithGracefulShutdown(srv *http.Server, d time.Duration) error {
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGTERM, os.Interrupt, os.Kill,
+	)
+	defer stop()
+
+	ctx, cancelCauseFunc := context.WithCancelCause(ctx)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			cancelCauseFunc(err)
+		}
+	}()
+
+	<-ctx.Done() // wait signal
+
+	// check error caused by cancel or not
+	if err := context.Cause(ctx); err != nil {
+		if !errors.Is(err, context.Canceled) {
+			return err
+		}
+	}
+
+	// shutdown
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), d)
+	defer cancelFunc()
+
+	// shutdown server with timeout
+	var shutdownErr error = nil
+	if err := srv.Shutdown(ctx); err != nil {
+		shutdownErr = err
+	}
+
+	// check timeout occurred or not
+	if err := context.Cause(ctx); err != nil || shutdownErr != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return errors.Join(err, shutdownErr)
+		}
+		return shutdownErr
+	}
+
+	return nil
+}
