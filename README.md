@@ -14,3 +14,9 @@
 - [ ] host routing
 - [ ] documentation
 - [ ] benchmarking
+- [ ] default middlewares
+    - [ ] logger
+    - [ ] debug middlewares
+    - [ ] json response headers
+    - [ ] compress middlewares
+    - [ ] nocache middlewares
