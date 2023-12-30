@@ -1,7 +1,7 @@
 package main
 
 import (
-	api "github.com/miyataka/go-server-skelton"
+	api "github.com/miyataka/minimalmux"
 )
 
 func main() {
