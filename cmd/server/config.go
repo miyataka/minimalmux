@@ -1,4 +1,4 @@
-package minimalmux
+package main
 
 import (
 	"log/slog"
