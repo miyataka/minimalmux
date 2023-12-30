@@ -11,10 +11,6 @@ import (
 )
 
 func main() {
-	RunServer()
-}
-
-func RunServer() {
 	config := newConfig()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout,
