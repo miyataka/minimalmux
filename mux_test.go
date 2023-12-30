@@ -35,6 +35,7 @@ func TestServeMuxRouting(t *testing.T) {
 }
 
 func testHttpRequest(t *testing.T, ts *httptest.Server, method, path string) *http.Response {
+	t.Helper()
 	req, err := http.NewRequest(method, ts.URL+path, nil)
 	if err != nil {
 		t.Fatal(err)
