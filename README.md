@@ -2,7 +2,7 @@
 
 ## TODO
 - [x] radix tree
-    - [ ] test
+    - [x] test
 - [x] http method routing
     - [x] method routing test
 - [x] not found handler
