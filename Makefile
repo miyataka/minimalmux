@@ -4,6 +4,14 @@ test:
 
 .PHONY: test-coverage
 test-coverage:
-	go test -coverprofile=coverage.out .
-	go tool cover -html=coverage.out
-	open coverage.html
+	mkdir -p tmp
+	go test -coverprofile=./tmp/coverage.out .
+	go tool cover -html=tmp/coverage.out
+	open tmp/coverage.html
+
+.PHONY: clean
+clean:
+	rm tmp/*
+	go clean -testcache
+	go clean -modcache
+	go clean -cache
