@@ -112,30 +112,44 @@ func (sm *ServeMux) handle(method string, pattern string, handler func(http.Resp
 }
 
 func (sm *ServeMux) Get(path string, handler http.HandlerFunc) {
-	sm.tree.insert(
-		http.MethodGet,
-		path,
-		Route{
-			Method:      http.MethodGet,
-			Pattern:     path,
-			HandlerFunc: handler,
-		},
-	)
+	sm.method(http.MethodGet, path, handler)
 }
 
 func (sm *ServeMux) Post(path string, handler http.HandlerFunc) {
+	sm.method(http.MethodPost, path, handler)
+}
+
+func (sm *ServeMux) Put(path string, handler http.HandlerFunc) {
+	sm.method(http.MethodPut, path, handler)
+}
+
+func (sm *ServeMux) Delete(path string, handler http.HandlerFunc) {
+	sm.method(http.MethodDelete, path, handler)
+}
+
+func (sm *ServeMux) Head(path string, handler http.HandlerFunc) {
+	sm.method(http.MethodHead, path, handler)
+}
+
+func (sm *ServeMux) Options(path string, handler http.HandlerFunc) {
+	sm.method(http.MethodOptions, path, handler)
+}
+
+func (sm *ServeMux) Patch(path string, handler http.HandlerFunc) {
+	sm.method(http.MethodPatch, path, handler)
+}
+
+func (sm *ServeMux) method(method string, path string, handler http.HandlerFunc) {
 	sm.tree.insert(
-		http.MethodPost,
+		method,
 		path,
 		Route{
-			Method:      http.MethodPost,
+			Method:      method,
 			Pattern:     path,
 			HandlerFunc: handler,
 		},
 	)
 }
-
-// TODO other http methods
 
 // graceful shutdown
 // TODO use custom type instead of  time.Duration
