@@ -156,9 +156,12 @@ func (sm *ServeMux) method(method string, path string, handler http.HandlerFunc)
 	)
 }
 
+type GracefulOpts struct {
+	TimeoutDuration time.Duration
+}
+
 // graceful shutdown
-// TODO use custom type instead of  time.Duration
-func ListenAndServeWithGracefulShutdown(srv *http.Server, d time.Duration) error {
+func ListenAndServeWithGracefulShutdown(srv *http.Server, opt GracefulOpts) error {
 	ctx, stop := signal.NotifyContext(context.Background(),
 		syscall.SIGTERM, os.Interrupt, os.Kill,
 	)
@@ -183,7 +186,7 @@ func ListenAndServeWithGracefulShutdown(srv *http.Server, d time.Duration) error
 
 	// shutdown
 
-	ctx, cancelFunc := context.WithTimeout(context.Background(), d)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), opt.TimeoutDuration)
 	defer cancelFunc()
 
 	// shutdown server with timeout

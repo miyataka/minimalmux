@@ -33,7 +33,7 @@ func RunServer() {
 		Handler: mux,
 	}
 
-	if err := minimalmux.ListenAndServeWithGracefulShutdown(srv, 5*time.Second); err != nil {
+	if err := minimalmux.ListenAndServeWithGracefulShutdown(srv, minimalmux.GracefulOpts{TimeoutDuration: 5 * time.Second}); err != nil {
 		logger.Error("server ListenAndServeWithGracefulShutdown error: ", err)
 	} else {
 		logger.Info("server shutdown gracefully")
