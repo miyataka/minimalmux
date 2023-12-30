@@ -1,4 +1,4 @@
-# go server skelton
+# minimalmux
 
 ## TODO
 - [x] radix tree
