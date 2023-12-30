@@ -58,6 +58,10 @@ func (sm *ServeMux) HandleFunc(pattern string, handler func(http.ResponseWriter,
 	sm.handle(methodAll, pattern, handler)
 }
 
+type paramCtxKey int
+
+const paramMapKey paramCtxKey = iota
+
 func (sm *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	route := sm.tree.search(r.Method, path)
@@ -65,7 +69,9 @@ func (sm *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sm.notFoundHandler(w, r)
 		return
 	}
-	route.HandlerFunc(w, r)
+	ctx := context.WithValue(r.Context(), paramMapKey, route.PathParamMap)
+	req := r.WithContext(ctx)
+	route.HandlerFunc(w, req)
 }
 
 func (sm *ServeMux) Handle(pattern string, handler http.Handler) {
@@ -76,6 +82,13 @@ func (sm *ServeMux) Handler(r *http.Request) (h http.Handler, pattern string) {
 	path := r.URL.Path
 	route := sm.tree.search(r.Method, path)
 	return route.HandlerFunc, route.Pattern
+}
+
+func GetParams(r *http.Request) map[string]string {
+	if v := r.Context().Value(paramMapKey); v != nil {
+		return v.(map[string]string)
+	}
+	return nil
 }
 
 // original method
