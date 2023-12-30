@@ -10,7 +10,7 @@
     - [x] single
     - [x] multiple
 - [x] middlewares
+- [x] graceful shutdown
 - [ ] host routing
 - [ ] documentation
 - [ ] benchmarking
-- [ ] graceful shutdown
