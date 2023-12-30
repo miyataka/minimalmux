@@ -3,7 +3,7 @@
 // cf. https://github.com/jun06t/go-sample/tree/master/radix-tree
 // MIT License
 
-package api
+package minimalmux
 
 import (
 	"strings"

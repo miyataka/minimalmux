@@ -1,4 +1,4 @@
-package api
+package minimalmux
 
 import "net/http"
 

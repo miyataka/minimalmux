@@ -1,9 +1,9 @@
 package main
 
 import (
-	api "github.com/miyataka/minimalmux"
+	"github.com/miyataka/minimalmux"
 )
 
 func main() {
-	api.RunServer()
+	minimalmux.RunServer()
 }
