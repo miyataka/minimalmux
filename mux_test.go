@@ -71,6 +71,18 @@ func Test_handle_panic(t *testing.T) {
 		mux.handle(http.MethodGet, "/test", testHandler)
 		mux.handle(http.MethodGet, "/test", testHandler)
 	})
+	t.Run("panic if pattern and handler is duplicated", func(t *testing.T) {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Errorf("panic not occur")
+			}
+			t.Log(err)
+		}()
+		mux := NewServeMux()
+		mux.handle(http.MethodGet, "/test", testHandler)
+		mux.handle(methodAll, "/test", testHandler)
+	})
 }
 
 func Test_GetPostPubDeleteHeadOptionsPatchmethods(t *testing.T) {
@@ -295,6 +307,17 @@ func TestPathParams(t *testing.T) {
 
 	for _, tc := range tcs {
 		testHttpRequest(t, ts, http.MethodGet, tc.path)
+	}
+}
+
+func TestServeMuxHandler(t *testing.T) {
+	mux := NewServeMux()
+	mux.Get("/test", testHandler)
+	r := &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test"}}
+	_, pattern := mux.Handler(r)
+
+	if pattern != "/test" {
+		t.Errorf("pattern not equal. got: %s, want: %s", pattern, "/test")
 	}
 }
 
