@@ -181,7 +181,7 @@ var testingRegisteredRoutes = testingRoutes{
 	},
 	{
 		method:       http.MethodGet,
-		pattern:      "/test/foo/{blah}",
+		pattern:      "/test/{blah}",
 		expectStatus: http.StatusOK,
 	},
 }
@@ -265,6 +265,12 @@ func TestPathParams(t *testing.T) {
 			expectParamMap: map[string]string{
 				"id":    "123",
 				"barID": "456",
+			},
+		},
+		{
+			path: "/test/something",
+			expectParamMap: map[string]string{
+				"blah": "something",
 			},
 		},
 	}
