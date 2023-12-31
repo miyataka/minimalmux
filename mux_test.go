@@ -36,6 +36,43 @@ func Test_handle(t *testing.T) {
 	}
 }
 
+func Test_handle_panic(t *testing.T) {
+	t.Run("panic if method is empty", func(t *testing.T) {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Errorf("panic not occur")
+			}
+			t.Log(err)
+		}()
+		mux := NewServeMux()
+		mux.handle("", "/test", testHandler)
+	})
+	t.Run("panic if handler is empty", func(t *testing.T) {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Errorf("panic not occur")
+			}
+			t.Log(err)
+		}()
+		mux := NewServeMux()
+		mux.handle(http.MethodGet, "/test", nil)
+	})
+	t.Run("panic if pattern and handler is duplicated", func(t *testing.T) {
+		defer func() {
+			err := recover()
+			if err == nil {
+				t.Errorf("panic not occur")
+			}
+			t.Log(err)
+		}()
+		mux := NewServeMux()
+		mux.handle(http.MethodGet, "/test", testHandler)
+		mux.handle(http.MethodGet, "/test", testHandler)
+	})
+}
+
 func Test_GetPostPubDeleteHeadOptionsPatchmethods(t *testing.T) {
 	tcs := []struct {
 		method       string

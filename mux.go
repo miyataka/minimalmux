@@ -104,12 +104,18 @@ func (sm *ServeMux) handle(method string, pattern string, handler func(http.Resp
 		panic("http: nil handler")
 	}
 
+	// duplicate check
+	r := sm.tree.search(method, pattern)
+	if r.Method == method && r.Pattern == pattern {
+		panic("http: duplicated registrations for " + method + " " + pattern)
+	}
+
 	if method == methodAll {
 		for _, m := range methodSlice {
 			// duplicate check
-			r := sm.tree.search(method, pattern)
-			if r.Method == method && r.Pattern == pattern {
-				panic("http: multiple registrations for " + method + " " + pattern)
+			r := sm.tree.search(m, pattern)
+			if r.Method == m && r.Pattern == pattern {
+				panic("http: duplicated registrations for " + m + " " + pattern)
 			}
 
 			// insert
