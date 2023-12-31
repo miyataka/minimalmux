@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	go test -v .
+	go test .
 
 .PHONY: test-coverage
 test-coverage:

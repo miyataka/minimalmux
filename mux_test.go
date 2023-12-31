@@ -1,6 +1,7 @@
 package minimalmux
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -92,6 +93,16 @@ var testingRegisteredRoutes = testingRoutes{
 		pattern:      "/test/foo/:id/bar/:barID",
 		expectStatus: http.StatusOK,
 	},
+	{
+		method:       http.MethodGet,
+		pattern:      "/test/foo/baz",
+		expectStatus: http.StatusOK,
+	},
+	{
+		method:       http.MethodGet,
+		pattern:      "/test/foo/{blah}",
+		expectStatus: http.StatusOK,
+	},
 }
 
 func TestServeMuxRouting_multipleRoutes(t *testing.T) {
@@ -103,7 +114,7 @@ func TestServeMuxRouting_multipleRoutes(t *testing.T) {
 			req:          http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test"}},
 			expectStatus: http.StatusOK,
 		},
-		{ // FIXME: should return `method not allowed`?
+		{ // NOTE: should return `method not allowed`?
 			req:          http.Request{Method: http.MethodPost, URL: &url.URL{Path: "/test"}},
 			expectStatus: http.StatusNotFound,
 		},
@@ -216,4 +227,52 @@ func TestPathParams(t *testing.T) {
 	for _, tc := range tcs {
 		testHttpRequest(t, ts, http.MethodGet, tc.path)
 	}
+}
+
+// longest match
+func TestRoutingLongestMatch(t *testing.T) {
+	mux := NewServeMux()
+	testHandler := func(s string) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(s + "\n"))
+		}
+	}
+	ah := testHandler("a")
+	bh := testHandler("b")
+	ch := testHandler("c")
+	dh := testHandler("d")
+	eh := testHandler("e")
+
+	mux.Handle("/test/foo", ah)
+	mux.Handle("/test/foo/bar", bh)
+	mux.Handle("/test/:foo/bar", ch)
+	mux.Handle("/test/:foo/:bar", dh)
+	mux.Handle("/:any", eh)
+
+	ts := httptest.NewServer(mux)
+
+	check := func(path, expect string) {
+		res := testHttpRequest(t, ts, http.MethodGet, path)
+		if res.StatusCode != http.StatusOK {
+			t.Errorf("Status code not equal. got: %d, want: %d", res.StatusCode, http.StatusOK)
+		}
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(body) != expect {
+			t.Errorf("Response body not equal. got: %s, want: %s", string(body), expect)
+		}
+	}
+
+	check("/test/foo", "a\n")
+	check("/test/foo/bar", "b\n")
+	check("/test/blah/bar", "c\n")
+	check("/test/some/bar", "c\n")
+	check("/test/some/baz", "d\n")
+	check("/test/fo/baz", "d\n")
+	// check("/test/foo/baz", "d\n") // NOTE: not found
+	check("/test/fooo/baz", "d\n")
+	check("/a", "e\n")
+	check("/testa", "e\n")
 }
