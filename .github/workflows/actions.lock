@@ -4,14 +4,14 @@
 version: 'v0.0.3'
 workflows:
     '.github/workflows/ci.yml':
-        - 'actions/checkout@v4'
-        - 'actions/setup-go@v4'
+        - 'actions/checkout@v7'
+        - 'actions/setup-go@v7'
     '.github/workflows/verify-actions-lockfile.yml':
         - 'actions/checkout@v7.0.1'
 dependencies:
-    'actions/checkout@v4':
-        ref: 'v4'
-        commit: 'sha1-11d5960a326750d5838078e36cf38b85af677262'
+    'actions/checkout@v7':
+        ref: 'v7'
+        commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
     'actions/checkout@v7.0.1':
@@ -19,8 +19,8 @@ dependencies:
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
-    'actions/setup-go@v4':
-        ref: 'v4'
-        commit: 'sha1-7b8cf10d4e4a01d4992d18a89f4d7dc5a3e6d6f4'
+    'actions/setup-go@v7':
+        ref: 'v7'
+        commit: 'sha1-b7ad1dad31e06c5925ef5d2fc7ad053ef454303e'
         owner_id: 44036562
         repo_id: 192624594
